@@ -13,11 +13,10 @@ static const char *desc =
  "\n"
  "\n"
  " USAGE:								\n"
- "  encdec codec input.wav output.wav                                   \n"
+ "  siren input.wav output.wav                                   \n"
  "\n"
  "\n"
  " where:\n"
- "  codec         Set the codec name.                                   \n"
  "  input.wav     Set the input WAV filename.                           \n"
  "  output.wav    Set the output WAV filename.                          \n"
 
@@ -68,7 +67,7 @@ static pj_status_t siren_codec(const char *filein, const char *fileout)
 
 	unsigned cnt, samples_per_frame;
 	unsigned sample_rate 	= 32000;
-	unsigned bit_rate		= 16000;
+	unsigned bit_rate	= 16000;
 	
 	pj_str_t tmp;
 	pjmedia_port *wavin, *wavout;
@@ -100,21 +99,21 @@ static pj_status_t siren_codec(const char *filein, const char *fileout)
     param.setting.vad = 1;
 
     /* Open wav for reading */
-    CHECK( pjmedia_wav_player_port_create(pool, filein, 
+ 	CHECK( pjmedia_wav_player_port_create(pool, filein, 
 					  param.info.frm_ptime, 
 					  PJMEDIA_FILE_NO_LOOP, 0, &wavin) );
 
     /* Open wav for writing */
-    CHECK( pjmedia_wav_writer_port_create(pool, fileout,
+	CHECK( pjmedia_wav_writer_port_create(pool, fileout,
 					  param.info.clock_rate, 
 					  param.info.channel_cnt,
 					  samples_per_frame,
 					  16, 0, 0, &wavout) );
 
     /* Alloc codec */
-    CHECK( pjmedia_codec_mgr_alloc_codec(cm, pci, &codec) );
-    CHECK( pjmedia_codec_init(codec, pool) );
-    CHECK( pjmedia_codec_open(codec, &param) );
+    	CHECK( pjmedia_codec_mgr_alloc_codec(cm, pci, &codec) );
+    	CHECK( pjmedia_codec_init(codec, pool) );
+    	CHECK( pjmedia_codec_open(codec, &param) );
     
     for (;;) {
 	pjmedia_frame frm_pcm, frm_bit, out_frm, frames[4];
@@ -141,39 +140,40 @@ static pj_status_t siren_codec(const char *filein, const char *fileout)
 	CHECK(pjmedia_codec_encode(codec, &frm_pcm, sizeof(bitstream), 
 	                           &frm_bit));
 
-	/* On DTX, write zero frame to wavout to maintain duration */
-	if (frm_bit.size == 0 || frm_bit.type != PJMEDIA_FRAME_TYPE_AUDIO) {
-	    out_frm.buf = (char*)pcmbuf;
-	    out_frm.size = 160;
-	    CHECK( pjmedia_port_put_frame(wavout, &out_frm) );
-	    TRACE_((THIS_FILE, "%d.%03d read: %u, enc: %u",
-		    T, frm_pcm.size, frm_bit.size));
-	    continue;
-	}
+	// /* On DTX, write zero frame to wavout to maintain duration */
+	// if (frm_bit.size == 0 || frm_bit.type != PJMEDIA_FRAME_TYPE_AUDIO) {
+	//     out_frm.buf = (char*)pcmbuf;
+	//     out_frm.size = 160;
+	//     CHECK( pjmedia_port_put_frame(wavout, &out_frm) );
+	//     TRACE_((THIS_FILE, "%d.%03d read: %u, enc: %u",
+	// 	    T, frm_pcm.size, frm_bit.size));
+	//     continue;
+	// }
 	
-	/* Parse the bitstream (not really necessary for this case
-	 * since we always decode 1 frame, but it's still good
-	 * for testing)
-	 */
-	ts.u64 = 0;
-	cnt = PJ_ARRAY_SIZE(frames);
-	CHECK( pjmedia_codec_parse(codec, bitstream, frm_bit.size, &ts, &cnt, 
-			           frames) );
-	CHECK( (cnt==1 ? PJ_SUCCESS : -1) );
+	// /* Parse the bitstream (not really necessary for this case
+	//  * since we always decode 1 frame, but it's still good
+	//  * for testing)
+	//  */
 
-	/* Decode or simulate packet loss */
+	// ts.u64 = 0;
+	// cnt = PJ_ARRAY_SIZE(frames);
+	// CHECK( pjmedia_codec_parse(codec, bitstream, frm_bit.size, &ts, &cnt, 
+	// 		           frames) );
+	// CHECK( (cnt==1 ? PJ_SUCCESS : -1) );
+
+	// /* Decode or simulate packet loss */
 	out_frm.buf = (char*)pcmbuf;
 	out_frm.size = sizeof(pcmbuf);
 	
-	if ((pj_rand() % 100) < (int)lost_pct) {
-	    /* Simulate loss */
-	    CHECK( pjmedia_codec_recover(codec, sizeof(pcmbuf), &out_frm) );
-	    TRACE_((THIS_FILE, "%d.%03d Packet lost", T));
-	} else {
-	    /* Decode */
-	    CHECK( pjmedia_codec_decode(codec, &frames[0], sizeof(pcmbuf), 
-				     &out_frm) );
-	}
+	// if ((pj_rand() % 100) < (int)lost_pct) {
+	//     /* Simulate loss */
+	//     CHECK( pjmedia_codec_recover(codec, sizeof(pcmbuf), &out_frm) );
+	//     TRACE_((THIS_FILE, "%d.%03d Packet lost", T));
+	// } else {
+	//     /* Decode */
+	//     CHECK( pjmedia_codec_decode(codec, &frames[0], sizeof(pcmbuf), 
+	// 			     &out_frm) );
+	// }
 
 	/* Write to WAV */
 	CHECK( pjmedia_port_put_frame(wavout, &out_frm) );
