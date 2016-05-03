@@ -66,9 +66,10 @@ static pj_status_t siren_codec(const char *filein, const char *fileout)
 	const char *codec_id = "G7221";
 
 	unsigned cnt, samples_per_frame;
-	unsigned sample_rate 	= 32000;
-	unsigned bit_rate	= 16000;
-	
+	unsigned sample_rate 	= 16000;
+	unsigned bit_rate	= 32000;
+	pj_bool_t enabled = 1;
+
 	pj_str_t tmp;
 	pjmedia_port *wavin, *wavout;
 
@@ -135,6 +136,10 @@ static pj_status_t siren_codec(const char *filein, const char *fileout)
 			      param.info.clock_rate;
 
 	/* Encode */
+	CHECK(pjmedia_codec_g7221_init (mept));
+	CHECK(pjmedia_codec_g7221_set_mode(sample_rate, bit_rate, enabled));
+
+
 	frm_bit.buf = bitstream;
 	frm_bit.size = sizeof(bitstream);
 	CHECK(pjmedia_codec_encode(codec, &frm_pcm, sizeof(bitstream), 
