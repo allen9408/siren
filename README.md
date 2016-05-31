@@ -30,28 +30,28 @@
 
 ### Running configure
 1. Enable G722.1:
-> pjpeoject/pjmedia/include/pjmedia-codec/congif.h: line 312
+> pjpeoject/pjmedia/include/pjmedia-codec/congif.h: line 312  
     DEFINE PJMEDIA\_HAS\_G7221\_CODEC    **0 -> 1**
 
 2. Configure and make
 
-    `./configure
-    make dep
-    make
-    sudo make install`
+    `./configure  `  
+    `make dep  `  
+    `make  `  
+    `sudo make install`  
 
 ---
 
 ## 2. Build app
 - Create a directory outside the PJSIP sources for your project and place your source files there. 
 - Create Makefile (<font color=red >**!!!Change spaces into tab**</font>)
-> \# If your application is in a file named myapp.cpp or myapp.c
-> \# this is the line you will need to build the binary.
-all: myapp
-> myapp: myapp.cpp
-> &#160; &#160; &#160; &#160;$(CC) -o $@ $< \`pkg-config --cflags --libs libpjproject\`
-> clean:
-> &#160; &#160; &#160; &#160;rm -f myapp.o myapp
+> \# If your application is in a file named myapp.cpp or myapp.c  
+> \# this is the line you will need to build the binary.  
+all: myapp  
+> myapp: myapp.cpp  
+> &#160; &#160; &#160; &#160;$(CC) -o $@ $< \`pkg-config --cflags --libs libpjproject\`  
+> clean:  
+> &#160; &#160; &#160; &#160;rm -f myapp.o myapp  
 
 - Add app(myapp.c) in directory
 - run **make**
